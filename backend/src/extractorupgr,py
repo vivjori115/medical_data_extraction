@@ -1,0 +1,76 @@
+import logging
+import os
+from pdf2image import convert_from_path
+import pytesseract
+import util
+from parser_prescription import PrescriptionParser
+from parser_patient_details import PatientDetailsParser
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Define paths for dependencies
+poppler_path = r'C:\poppler-24.08.0\Library\bin'
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+def extract(file_path, file_format):
+    """
+    Extracts text and relevant fields from a PDF document.
+
+    Args:
+        file_path (str): Path to the input PDF file.
+        file_format (str): Document type ('prescription' or 'patient_details').
+
+    Returns:
+        dict: Extracted fields and their values.
+    """
+    logging.info(f"Processing file: {file_path} with format: {file_format}")
+
+    # Validate the file path
+    if not os.path.exists(file_path):
+        logging.error(f"File not found: {file_path}")
+        raise FileNotFoundError(f"The file {file_path} does not exist.")
+
+    # Step 1: Extract text from the PDF
+    try:
+        pages = convert_from_path(file_path, poppler_path=poppler_path)
+        logging.info(f"PDF converted to {len(pages)} image(s)")
+    except Exception as e:
+        logging.error(f"Error converting PDF to images: {e}")
+        raise
+
+    document_text = ''
+
+    for i, page in enumerate(pages):
+        logging.info(f"Processing page {i + 1}")
+        try:
+            processed_image = util.preprocess_image(page)
+            text = pytesseract.image_to_string(processed_image, lang='eng')
+            document_text += f"\nPage {i + 1}:\n" + text
+        except Exception as e:
+            logging.error(f"Error processing page {i + 1}: {e}")
+
+    # Step 2: Parse extracted text based on the file format
+    try:
+        if file_format == 'prescription':
+            extracted_data = PrescriptionParser(document_text).parse()
+        elif file_format == 'patient_details':
+            extracted_data = PatientDetailsParser(document_text).parse()
+        else:
+            raise ValueError(f"Invalid document format: {file_format}")
+    except Exception as e:
+        logging.error(f"Error parsing document: {e}")
+        raise
+
+    logging.info("Extraction and parsing complete")
+    return extracted_data
+
+if __name__ == '__main__':
+    sample_file_path = r'C:\projects\resources\prescription\pre_2.pdf'
+    sample_format = 'prescription'
+
+    try:
+        result = extract(sample_file_path, sample_format)
+        print(result)
+    except Exception as e:
+        logging.error(f"Failed to process the document: {e}")
