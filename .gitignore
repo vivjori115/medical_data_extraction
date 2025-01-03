@@ -1,0 +1,41 @@
+# Ignore Python bytecode files
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore virtual environment
+venv/
+
+# Ignore Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore IDE-specific files
+.vscode/
+.idea/
+
+# Ignore logs and temporary files
+*.log
+*.tmp
+
+# Ignore files from Jupyter notebooks (like outputs)
+*.csv
+*.dat
+*.xls
+*.xlsx
+*.json
+
+# Ignore resources
+backend/resources/patient_details/
+backend/resources/prescription/
+
+# Ignore the backend tests' pycache
+backend/tests/__pycache__/
+
+# Ignore backend notebooks' pycache
+backend/notebooks/.ipynb_checkpoints/
+
+# Ignore frontend build/output files
+frontend/templates/.ipynb_checkpoints/
+
+# Ignore readme file in frontend
+frontend/templates/readme.md

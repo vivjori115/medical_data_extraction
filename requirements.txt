@@ -6,3 +6,4 @@ pandas==0.25.3
 Pillow==7.0.0
 fastapi[all]
 pytest==6.2.2
+
